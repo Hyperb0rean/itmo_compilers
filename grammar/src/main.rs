@@ -149,8 +149,8 @@ fn main() {
     }
 
     if grammar.parse(&args[1]) {
-        println!("Строка '{}' принята", args[1]);
+        println!("String '{}' accepted", args[1]);
     } else {
-        println!("Строка '{}' отклонена", args[1]);
+        println!("String '{}' rejected", args[1]);
     }
 }

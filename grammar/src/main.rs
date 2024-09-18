@@ -2,7 +2,6 @@ use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
 use std::env;
 
-// Определяем типы для символов грамматики
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum Symbol {
     NonTerminal(char),
@@ -11,7 +10,6 @@ enum Symbol {
     EndMarker,
 }
 
-// Описание правил грамматики
 #[derive(Debug)]
 struct Grammar {
     rules: HashMap<Symbol, Vec<Vec<Symbol>>>,
@@ -189,6 +187,7 @@ impl Grammar {
             match top {
                 Symbol::Terminal(c) => {
                     if c == input_chars[idx] {
+                        println!("Next");
                         idx += 1;
                     } else {
                         return false;

@@ -30,7 +30,7 @@ pub enum Expr {
         name: String,
         expr: Box<Expr>,
     },
-    ExprStmt(Box<Expr>), // Выражение как оператор
+    ExprStmt(Box<Expr>), 
 }
 
 #[derive(Debug, PartialEq, Clone)]

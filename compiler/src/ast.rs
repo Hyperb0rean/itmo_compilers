@@ -57,6 +57,6 @@ pub enum UnaryOp {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum VarType {
-    I64,
+    Number,
     Bool,
 }

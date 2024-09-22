@@ -1,7 +1,7 @@
 /* Comment */
 // Also comment
 
-let a: i64 = 10;
+let a: num = 10;
 let b: bool = true;
 
 if a > 5 {

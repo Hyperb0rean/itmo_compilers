@@ -1,6 +1,6 @@
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
-    I64(i64),
+    Number(i64),
     Bool(bool),
     Var(String),
     Binary {

@@ -1,7 +1,27 @@
 
+use std::{default, num::ParseIntError};
+
 use logos::Logos;
 
+#[derive(Default, Debug, Clone, PartialEq)]
+pub enum LexingError {
+    InvalidNumber(String),
+    #[default]
+    UnknownLexem
+}
+
+impl From<ParseIntError> for LexingError {
+    fn from(err: ParseIntError) -> Self {
+        use std::num::IntErrorKind::*;
+        match err.kind() {
+            PosOverflow | NegOverflow => LexingError::InvalidNumber("Overflow error".to_owned()),
+            _ => LexingError::InvalidNumber("Other error".to_owned()),
+        }
+    }
+}
+
 #[derive(Logos, Debug, PartialEq, Clone)]
+#[logos(error = LexingError)]
 #[logos(skip r"[ \t\n\f]+")] 
 pub enum Token {
     // Key words
@@ -15,8 +35,8 @@ pub enum Token {
     KwWhile,
 
     // Types
-    #[token("i64")]
-    TypeI64,
+    #[token("num")]
+    TypeNumber,
     #[token("bool")]
     TypeBool,
 
@@ -67,17 +87,15 @@ pub enum Token {
     #[token("}")]
     RBrace,
 
-
     #[regex(r"[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice().to_string())]
     Identifier(String),
 
     // Literals
-    #[token("true")]
-    LitTrue,
-    #[token("false")]
-    LitFalse,
+    #[token("false", |_| false)]
+    #[token("true", |_| true)]
+    LitBool(bool),
 
-    #[regex(r"\d+", |lex| lex.slice().parse().map_err(|_| ()))]
+    #[regex(r"\d+", |lex| lex.slice().parse())]
     LitNumber(i64),
 }
 
@@ -88,7 +106,8 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
     while let Some(token) = lexer.next() {
         match token {
             Ok(token) => tokens.push(token),
-            _ => return Err(format!("Unknown lexem")),
+            Err(LexingError::InvalidNumber(s)) => return Err(format!("Invalid number: {}", s)),
+            _ => return Err(format!("Unknown lexem"))
         }
     }
 

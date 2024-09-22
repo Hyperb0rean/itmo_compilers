@@ -1,8 +1,6 @@
-// src/ast.rs
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
-    Int(i64),
+    I64(i64),
     Bool(bool),
     Var(String),
     Binary {
@@ -14,9 +12,28 @@ pub enum Expr {
         op: UnaryOp,
         expr: Box<Expr>,
     },
+    Let {
+        name: String,
+        var_type: VarType,
+        expr: Box<Expr>,
+    },
+    If {
+        condition: Box<Expr>,
+        then_branch: Vec<Expr>,
+        else_branch: Option<Vec<Expr>>,
+    },
+    While {
+        condition: Box<Expr>,
+        body: Vec<Expr>,
+    },
+    Assign {
+        name: String,
+        expr: Box<Expr>,
+    },
+    ExprStmt(Box<Expr>), // Выражение как оператор
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -32,37 +49,14 @@ pub enum BinaryOp {
     Ge,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum UnaryOp {
     Not,
     Neg,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Statement {
-    Let {
-        name: String,
-        var_type: VarType,
-        expr: Expr,
-    },
-    Assign {
-        name: String,
-        expr: Expr,
-    },
-    If {
-        condition: Expr,
-        then_branch: Vec<Statement>,
-        else_branch: Option<Vec<Statement>>,
-    },
-    While {
-        condition: Expr,
-        body: Vec<Statement>,
-    },
-    ExprStmt(Expr),
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum VarType {
-    Int,
+    I64,
     Bool,
 }

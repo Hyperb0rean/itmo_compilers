@@ -27,7 +27,6 @@ impl<'a> Parser<'a> {
         Ok(expressions)
     }
 
-    
     fn parse_expression(&mut self) -> Result<Expr, String> {
         self.parse_expr()
     }
@@ -192,19 +191,19 @@ impl<'a> Parser<'a> {
                     Some(Token::RParen) => Ok(expr),
                     _ => Err("Expected ')'".to_string()),
                 }
-            },
+            }
             Some(Token::LitNumber(n)) => Ok(Expr::Number(n)),
             Some(Token::LitBool(v)) => Ok(Expr::Bool(v)),
             Some(Token::Identifier(name)) => {
                 if let Some(Token::Assign) = self.tokens.peek() {
                     self.tokens.next(); // Consume '='
                     let expr = self.parse_expr()?;
-                    
+
                     match self.tokens.next() {
                         Some(Token::Semicolon) => (),
                         _ => return Err("Expected ';' at the end of statement".to_string()),
                     }
-                    
+
                     Ok(Expr::Assign {
                         name,
                         expr: Box::new(expr),
@@ -212,7 +211,7 @@ impl<'a> Parser<'a> {
                 } else {
                     Ok(Expr::Var(name))
                 }
-            },
+            }
             Some(tok) => Err(format!("Unexpected token {:?}", tok)),
             None => Err("Unexpected EOF".to_string()),
         }
@@ -229,7 +228,8 @@ impl<'a> Parser<'a> {
         match self.tokens.next() {
             Some(Token::Colon) => (),
             _ => return Err("Expected ':' after identifier".to_string()),
-        }let var_type = match self.tokens.next() {
+        }
+        let var_type = match self.tokens.next() {
             Some(Token::TypeNumber) => VarType::Number,
             Some(Token::TypeBool) => VarType::Bool,
             _ => return Err("Expected type ':'".to_string()),

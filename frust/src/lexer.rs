@@ -1,4 +1,3 @@
-
 use std::{default, num::ParseIntError};
 
 use logos::Logos;
@@ -7,7 +6,7 @@ use logos::Logos;
 pub enum LexingError {
     InvalidNumber(String),
     #[default]
-    UnknownLexem
+    UnknownLexem,
 }
 
 impl From<ParseIntError> for LexingError {
@@ -22,7 +21,7 @@ impl From<ParseIntError> for LexingError {
 
 #[derive(Logos, Debug, PartialEq, Clone)]
 #[logos(error = LexingError)]
-#[logos(skip r"[ \t\n\f]+")] 
+#[logos(skip r"[ \t\n\f]+")]
 pub enum Token {
     // Key words
     #[token("let")]
@@ -107,7 +106,7 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
         match token {
             Ok(token) => tokens.push(token),
             Err(LexingError::InvalidNumber(s)) => return Err(format!("Invalid number: {}", s)),
-            _ => return Err(format!("Unknown lexem"))
+            _ => return Err(format!("Unknown lexem")),
         }
     }
 

@@ -4,15 +4,15 @@
 let a: num = 10;
 let b: bool = true;
 
-if a > 5 {
-   a = a + 1;
-} 
-else {
-    b = false;
-}
+//if a > 5 {
+//   a = a + 1;
+//} 
+//else {
+//    b = false;
+//}
 
 // let c: num = if a > 1 {a} else {a+1};
 
-while a < 20 {
-    a = a * 2;
-}
+//while a < 20 {
+//    a = a * 2;
+//}

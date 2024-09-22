@@ -1,14 +1,16 @@
 use std::env;
-mod io;
 mod ast;
+mod codegen;
+mod inst;
+mod io;
 mod lexer;
-mod preprocessor;
 mod parser;
+mod preprocessor;
 
 mod test;
 
 use crate::preprocessor::*;
-use ast::Expr;
+use codegen::*;
 use io::*;
 use lexer::*;
 use parser::*;

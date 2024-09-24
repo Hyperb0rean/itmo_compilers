@@ -151,29 +151,72 @@ impl CodeGenContext {
                 ));
             }
             Expr::Unary { op, expr } => {
-                self.generate(expr)?;
-                // TODO not only for bool, neg only for int
-                self.load_int_literal(
-                    match op {
-                        UnaryOp::Not => 1,
-                        UnaryOp::Neg => u32::MAX,
-                    },
-                    Reg::Temp(1),
-                );
-
-                self.instructions.push(Instruction::new_rtype(
-                    Opcode::Xor,
-                    Reg::Temp(0),
-                    Reg::Temp(1),
-                    Reg::Temp(0),
-                ));
+                // TODO typesafety
+                match op {
+                    UnaryOp::Not => {
+                        self.instructions.push(Instruction::new_itype(
+                            Opcode::Xori,
+                            Reg::Temp(0),
+                            Reg::Temp(0),
+                            1,
+                        ));
+                    }
+                    UnaryOp::Neg => {
+                        self.instructions.push(Instruction::new_rtype(
+                            Opcode::Sub,
+                            Reg::Temp(0),
+                            Reg::Zero,
+                            Reg::Temp(0),
+                        ));
+                    }
+                }
             }
             Expr::If {
                 condition,
                 then_branch,
                 else_branch,
-            } => todo!(),
-            Expr::While { condition, body } => todo!(),
+            } => {
+                self.generate(condition)?;
+
+                let else_label = self.generate_label("else".to_string());
+                let end_label = self.generate_label("end_if".to_string());
+
+                let condition_index = self.instructions.len();
+
+                self.instructions.push(Instruction::new_itype(
+                    Opcode::Beq,
+                    Reg::Temp(0),
+                    Reg::Zero,
+                    0,
+                ));
+
+                for expr in then_branch {
+                    self.generate(expr)?;
+                }
+
+                let end_then_index = self.instructions.len();
+                if else_branch.is_some() {
+                    self.instructions
+                        .push(Instruction::new_jtype(Opcode::Jal, 0));
+                }
+                self.instructions[condition_index]
+                    .set_offset(end_then_index as i32 - (condition_index as i32));
+
+                if let Some(else_branch) = else_branch {
+                    for expr in else_branch {
+                        self.generate(expr)?;
+                    }
+                    let end_else_index = self.instructions.len();
+                    self.instructions[end_then_index]
+                        .set_offset(end_else_index as i32 - 1 - (end_then_index as i32));
+                }
+            }
+            Expr::While { condition, body } => {
+                let label = self.generate_label(String::from("while"));
+                self.generate(&condition)?;
+                // GPT
+                // in Reg::Temp(0) should be 1 or 0
+            }
         }
         Ok(())
     }

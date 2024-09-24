@@ -116,9 +116,10 @@ pub enum Type {
     J,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Instruction {
     notation: Type,
+    label: Option<String>,
     opcode: Opcode,
     rd: Option<Reg>,
     rs1: Option<Reg>,
@@ -131,6 +132,7 @@ impl Instruction {
     pub fn new_rtype(opcode: Opcode, rd: Reg, rs1: Reg, rs2: Reg) -> Self {
         Instruction {
             notation: Type::R,
+            label: None,
             opcode,
             rd: Some(rd),
             rs1: Some(rs1),
@@ -143,6 +145,7 @@ impl Instruction {
     pub fn new_itype(opcode: Opcode, rd: Reg, rs1: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::I,
+            label: None,
             opcode,
             rd: Some(rd),
             rs1: Some(rs1),
@@ -155,6 +158,7 @@ impl Instruction {
     pub fn new_stype(opcode: Opcode, rs1: Reg, rs2: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::S,
+            label: None,
             opcode,
             rd: None,
             rs1: Some(rs1),
@@ -167,6 +171,7 @@ impl Instruction {
     pub fn new_utype(opcode: Opcode, rd: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::U,
+            label: None,
             opcode,
             rd: Some(rd),
             rs1: None,
@@ -179,6 +184,7 @@ impl Instruction {
     pub fn new_btype(opcode: Opcode, rs1: Reg, rs2: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::B,
+            label: None,
             opcode,
             rd: None,
             rs1: Some(rs1),
@@ -191,17 +197,30 @@ impl Instruction {
     pub fn new_jtype(opcode: Opcode, imm: u32) -> Self {
         Instruction {
             notation: Type::J,
+            label: None,
             opcode,
-            rd: None,
+            rd: Some(Reg::Zero),
             rs1: None,
             rs2: None,
             imm: Some(imm),
         }
     }
 
+    pub fn set_label(&mut self, label: String) {
+        self.label = Some(label);
+    }
+
+    pub fn set_offset(&mut self, offset: i32) {
+        self.imm = Some(offset as u32);
+    }
+
     pub fn to_string(&self) -> String {
-        let mut parts = vec![self.opcode.to_string()];
-        match self.notation {
+        let mut parts = if let Some(label) = self.label.clone() {
+            vec![label, String::from(": \n")]
+        } else {
+            vec![]
+        };
+        parts.push(match self.notation {
             Type::R => format!(
                 "{} {}, {}, {}",
                 self.opcode.to_string(),
@@ -233,7 +252,13 @@ impl Instruction {
             ),
             Type::U => todo!(),
             Type::B => todo!(),
-            Type::J => todo!(),
-        }
+            Type::J => format!(
+                "{} {}, {}",
+                self.opcode.to_string(),
+                self.rd.unwrap().to_string(),
+                self.imm.unwrap().to_string()
+            ),
+        });
+        parts.join("")
     }
 }

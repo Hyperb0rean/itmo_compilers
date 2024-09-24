@@ -1,16 +1,14 @@
 /* Comment */
 // Also comment
 
-let a: num = -1;
-let c: num = -a;
+let a: num = 48;
 
-
-//if a > 5 {
-//   a = a + 1;
-//} 
-//else {
-//    b = false;
-//}
+if a >= 50 {
+   a = a + 2;
+} 
+else {
+    a = 49;
+}
 
 // let c: num = if a > 1 {a} else {a+1};
 

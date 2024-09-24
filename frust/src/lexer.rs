@@ -60,6 +60,8 @@ pub enum Token {
     OpMul,
     #[token("/")]
     OpDiv,
+    #[token("%")]
+    OpMod,
     #[token("<")]
     OpLt,
     #[token(">")]
@@ -95,7 +97,7 @@ pub enum Token {
     LitBool(bool),
 
     #[regex(r"\d+", |lex| lex.slice().parse())]
-    LitNumber(i64),
+    LitNumber(i32),
 }
 
 pub fn lexer(input: &str) -> Result<Vec<Token>, String> {

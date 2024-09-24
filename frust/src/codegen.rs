@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use std::vec;
 
 pub struct CodeGenContext {
-    symbol_table: HashMap<String, usize>, // var -> address
+    symbol_table: HashMap<String, u32>, // var -> address
     instructions: Vec<Instruction>,
     label_count: usize,
-    stack_offset: usize,
+    stack_offset: u32,
 }
 
 impl CodeGenContext {
@@ -69,12 +69,18 @@ impl CodeGenContext {
         }
     }
 
-    fn load_int_literal(&mut self, val: i64, dest: Reg) {
+    fn load_int_literal(&mut self, val: u32, dest: Reg) {
+        self.instructions.push(Instruction::new_itype(
+            Opcode::Lui,
+            dest,
+            Reg::Zero,
+            val >> 12,
+        ));
         self.instructions.push(Instruction::new_itype(
             Opcode::Addi,
             dest,
             Reg::Zero,
-            val as usize,
+            val & 0b111111111111,
         ));
     }
 
@@ -90,7 +96,7 @@ impl CodeGenContext {
     pub fn generate(&mut self, expr: &Expr) -> Result<(), String> {
         match expr {
             Expr::Number(n) => {
-                self.load_int_literal(*n, Reg::Temp(0));
+                self.load_int_literal(*n as u32, Reg::Temp(0));
             }
             Expr::Bool(b) => {
                 self.load_bool_literal(*b, Reg::Temp(0));
@@ -129,21 +135,39 @@ impl CodeGenContext {
                         BinaryOp::Sub => Opcode::Sub,
                         BinaryOp::Mul => Opcode::Mul,
                         BinaryOp::Div => Opcode::Div,
+                        BinaryOp::Mod => Opcode::Rem,
                         BinaryOp::And => Opcode::And,
                         BinaryOp::Or => Opcode::Or,
-                        BinaryOp::Eq => todo!(),
-                        BinaryOp::Neq => todo!(),
-                        BinaryOp::Lt => todo!(),
+                        BinaryOp::Eq => Opcode::Seq,
+                        BinaryOp::Neq => Opcode::Sne,
+                        BinaryOp::Lt => Opcode::Slt,
+                        BinaryOp::Ge => Opcode::Sge,
                         BinaryOp::Gt => todo!(),
                         BinaryOp::Le => todo!(),
-                        BinaryOp::Ge => todo!(),
                     },
                     Reg::Temp(0),
                     Reg::Temp(1),
                     Reg::Temp(0),
                 ));
             }
-            Expr::Unary { op, expr } => todo!(),
+            Expr::Unary { op, expr } => {
+                self.generate(expr)?;
+                // TODO not only for bool, neg only for int
+                self.load_int_literal(
+                    match op {
+                        UnaryOp::Not => 1,
+                        UnaryOp::Neg => u32::MAX,
+                    },
+                    Reg::Temp(1),
+                );
+
+                self.instructions.push(Instruction::new_rtype(
+                    Opcode::Xor,
+                    Reg::Temp(0),
+                    Reg::Temp(1),
+                    Reg::Temp(0),
+                ));
+            }
             Expr::If {
                 condition,
                 then_branch,

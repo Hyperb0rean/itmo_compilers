@@ -139,6 +139,7 @@ impl<'a> Parser<'a> {
             let op = match self.tokens.peek() {
                 Some(Token::OpMul) => BinaryOp::Mul,
                 Some(Token::OpDiv) => BinaryOp::Div,
+                Some(Token::OpMod) => BinaryOp::Mod,
                 _ => break,
             };
             self.tokens.next(); // Consume operator * / /

@@ -6,20 +6,28 @@ pub enum Opcode {
     Sub,
     Mul,
     Div,
+    Rem,
     And,
+    Xor,
+    Sll,
+    Srl,
+    Sra,
     Or,
     Slt,
-    Sgt,
+    Seq,
+    Sne,
+    Sge,
     Beq,
     Bne,
-    Li,
+    Blt,
+    Bge,
     Lw,
     Sw,
+    Lui,
     Addi,
+    Xori,
     Jal,
     Jalr,
-    Xor,
-    Neg,
 }
 
 impl Opcode {
@@ -29,20 +37,28 @@ impl Opcode {
             Opcode::Sub => "sub",
             Opcode::Mul => "mul",
             Opcode::Div => "div",
+            Opcode::Rem => "rem",
             Opcode::And => "and",
             Opcode::Or => "or",
+            Opcode::Xor => "xor",
+            Opcode::Sll => "sll",
+            Opcode::Srl => "srl",
+            Opcode::Sra => "sra",
             Opcode::Slt => "slt",
-            Opcode::Sgt => "sgt",
+            Opcode::Seq => "seq",
+            Opcode::Sne => "sne",
+            Opcode::Sge => "sge",
             Opcode::Beq => "beq",
             Opcode::Bne => "bne",
-            Opcode::Li => "li",
+            Opcode::Blt => "blt",
+            Opcode::Bge => "bge",
             Opcode::Lw => "lw",
             Opcode::Sw => "sw",
+            Opcode::Lui => "lui",
             Opcode::Addi => "addi",
+            Opcode::Xori => "xori",
             Opcode::Jal => "jal",
             Opcode::Jalr => "jalr",
-            Opcode::Xor => "xor",
-            Opcode::Neg => "neg",
         }
         .to_string()
     }
@@ -107,7 +123,7 @@ pub struct Instruction {
     rd: Option<Reg>,
     rs1: Option<Reg>,
     rs2: Option<Reg>,
-    imm: Option<usize>,
+    imm: Option<u32>,
 }
 
 impl Instruction {
@@ -124,7 +140,7 @@ impl Instruction {
     }
 
     /// I-Type: opcode rd, rs1, imm
-    pub fn new_itype(opcode: Opcode, rd: Reg, rs1: Reg, imm: usize) -> Self {
+    pub fn new_itype(opcode: Opcode, rd: Reg, rs1: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::I,
             opcode,
@@ -136,7 +152,7 @@ impl Instruction {
     }
 
     /// S-Type: opcode rs1, rs2, imm
-    pub fn new_stype(opcode: Opcode, rs1: Reg, rs2: Reg, imm: usize) -> Self {
+    pub fn new_stype(opcode: Opcode, rs1: Reg, rs2: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::S,
             opcode,
@@ -148,7 +164,7 @@ impl Instruction {
     }
 
     /// U-Type: opcode rd, imm
-    pub fn new_utype(opcode: Opcode, rd: Reg, imm: usize) -> Self {
+    pub fn new_utype(opcode: Opcode, rd: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::U,
             opcode,
@@ -160,7 +176,7 @@ impl Instruction {
     }
 
     /// B-Type: opcode rs1, rs2, label(imm)
-    pub fn new_btype(opcode: Opcode, rs1: Reg, rs2: Reg, imm: usize) -> Self {
+    pub fn new_btype(opcode: Opcode, rs1: Reg, rs2: Reg, imm: u32) -> Self {
         Instruction {
             notation: Type::B,
             opcode,
@@ -172,7 +188,7 @@ impl Instruction {
     }
 
     /// J-Type: opcode label(imm)
-    pub fn new_jtype(opcode: Opcode, imm: usize) -> Self {
+    pub fn new_jtype(opcode: Opcode, imm: u32) -> Self {
         Instruction {
             notation: Type::J,
             opcode,
@@ -193,13 +209,21 @@ impl Instruction {
                 self.rs1.unwrap().to_string(),
                 self.rs2.unwrap().to_string()
             ),
-            Type::I => format!(
-                "{} {}, {}, {}",
-                self.opcode.to_string(),
-                self.rd.unwrap().to_string(),
-                self.rs1.unwrap().to_string(),
-                self.imm.unwrap().to_string()
-            ),
+            Type::I => match self.opcode {
+                Opcode::Lui => format!(
+                    "{} {}, {}",
+                    self.opcode.to_string(),
+                    self.rd.unwrap().to_string(),
+                    self.imm.unwrap().to_string()
+                ),
+                _ => format!(
+                    "{} {}, {}, {}",
+                    self.opcode.to_string(),
+                    self.rd.unwrap().to_string(),
+                    self.rs1.unwrap().to_string(),
+                    self.imm.unwrap().to_string()
+                ),
+            },
             Type::S => format!(
                 "{} {}, {}, {}",
                 self.opcode.to_string(),

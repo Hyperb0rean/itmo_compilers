@@ -1,9 +1,8 @@
 /* Comment */
 // Also comment
 
-let a: num = 16;
-let b: num = a - 13;
-let c: num = b * a;
+let a: num = -1;
+let c: num = -a;
 
 
 //if a > 5 {

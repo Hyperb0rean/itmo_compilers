@@ -3,15 +3,6 @@
 
 let a: num = 48;
 
-if a >= 50 {
-   a = a + 2;
-} 
-else {
-    a = 49;
+while a < 55 {
+    a =  a + 1;
 }
-
-// let c: num = if a > 1 {a} else {a+1};
-
-//while a < 20 {
-//    a = a * 2;
-//}

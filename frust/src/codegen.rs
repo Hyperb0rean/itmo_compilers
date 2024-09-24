@@ -177,10 +177,6 @@ impl CodeGenContext {
                 else_branch,
             } => {
                 self.generate(condition)?;
-
-                let else_label = self.generate_label("else".to_string());
-                let end_label = self.generate_label("end_if".to_string());
-
                 let condition_index = self.instructions.len();
 
                 self.instructions.push(Instruction::new_itype(
@@ -213,9 +209,27 @@ impl CodeGenContext {
             }
             Expr::While { condition, body } => {
                 let label = self.generate_label(String::from("while"));
-                self.generate(&condition)?;
-                // GPT
-                // in Reg::Temp(0) should be 1 or 0
+                let condition_start = self.instructions.len();
+                self.generate(condition)?;
+                let condition_end = self.instructions.len();
+
+                self.instructions.push(Instruction::new_itype(
+                    Opcode::Beq,
+                    Reg::Temp(0),
+                    Reg::Zero,
+                    0, 
+                ));
+
+                for expr in body {
+                    self.generate(expr)?;
+                }
+                let jmp_index = self.instructions.len();
+                self.instructions.push(Instruction::new_jtype(
+                    Opcode::Jal,
+                    (condition_start as i32 - 1 - jmp_index as i32) as u32,
+                ));
+                self.instructions[condition_end].set_offset(jmp_index as i32 - condition_end as i32);
+
             }
         }
         Ok(())

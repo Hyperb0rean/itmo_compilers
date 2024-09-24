@@ -256,7 +256,7 @@ impl Instruction {
                 "{} {}, {}",
                 self.opcode.to_string(),
                 self.rd.unwrap().to_string(),
-                self.imm.unwrap().to_string()
+                (self.imm.unwrap() as i32).to_string()
             ),
         });
         parts.join("")

@@ -1,8 +1,10 @@
 /* Comment */
 // Also comment
 
-let a: num = 10;
-let b: bool = true;
+let a: num = 16;
+let b: num = a - 13;
+let c: num = b * a;
+
 
 //if a > 5 {
 //   a = a + 1;

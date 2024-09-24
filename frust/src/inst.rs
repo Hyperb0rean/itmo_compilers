@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Opcode {
     Add,
@@ -20,7 +22,6 @@ pub enum Opcode {
     Neg,
 }
 
-
 impl Opcode {
     pub fn to_string(&self) -> String {
         match self {
@@ -42,20 +43,21 @@ impl Opcode {
             Opcode::Jalr => "jalr",
             Opcode::Xor => "xor",
             Opcode::Neg => "neg",
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
 // https://en.wikipedia.org/wiki/RISC-V
-#[derive(Debug,Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Reg {
-    Zero, // x0
+    Zero,          // x0
     ReturnAddress, //x1
-    StackPointer, //x2
+    StackPointer,  //x2
     GlobalPointer, //x3
     ThreadPointer, //x4
-    Temp(u8), // x6-7 x28-31
-    Saved(u8), // x8-9 x18-27
+    Temp(u8),      // x6-7 x28-31
+    Saved(u8),     // x8-9 x18-27
     Arguments(u8), // x10-11 return val, x12-17 args
 }
 
@@ -83,21 +85,22 @@ impl Reg {
                 _ => todo!("Not implemetned"),
             },
             Reg::Arguments(id) => todo!("Not implemented!"),
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
-#[derive(Debug,Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Type {
     R,
     I,
     S,
     U,
     B,
-    J
+    J,
 }
 
-#[derive(Debug,Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Instruction {
     notation: Type,
     opcode: Opcode,
@@ -183,9 +186,27 @@ impl Instruction {
     pub fn to_string(&self) -> String {
         let mut parts = vec![self.opcode.to_string()];
         match self.notation {
-            Type::R => todo!(),
-            Type::I => todo!(),
-            Type::S => todo!(),
+            Type::R => format!(
+                "{} {}, {}, {}",
+                self.opcode.to_string(),
+                self.rd.unwrap().to_string(),
+                self.rs1.unwrap().to_string(),
+                self.rs2.unwrap().to_string()
+            ),
+            Type::I => format!(
+                "{} {}, {}, {}",
+                self.opcode.to_string(),
+                self.rd.unwrap().to_string(),
+                self.rs1.unwrap().to_string(),
+                self.imm.unwrap().to_string()
+            ),
+            Type::S => format!(
+                "{} {}, {}, {}",
+                self.opcode.to_string(),
+                self.rs1.unwrap().to_string(),
+                self.imm.unwrap().to_string(),
+                self.rs2.unwrap().to_string()
+            ),
             Type::U => todo!(),
             Type::B => todo!(),
             Type::J => todo!(),

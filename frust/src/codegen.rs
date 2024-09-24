@@ -1,6 +1,7 @@
 use crate::ast::*;
 use crate::inst::*;
 use std::collections::HashMap;
+use std::vec;
 
 pub struct CodeGenContext {
     symbol_table: HashMap<String, usize>, // var -> address
@@ -11,11 +12,17 @@ pub struct CodeGenContext {
 
 impl CodeGenContext {
     pub fn new() -> Self {
+        let stack_size = 32;
         CodeGenContext {
             symbol_table: HashMap::new(),
-            instructions: Vec::new(),
+            instructions: vec![Instruction::new_itype(
+                Opcode::Addi,
+                Reg::StackPointer,
+                Reg::Zero,
+                stack_size,
+            )],
             label_count: 0,
-            stack_offset: 0,
+            stack_offset: stack_size,
         }
     }
 
@@ -30,18 +37,18 @@ impl CodeGenContext {
     }
 
     fn allocate_variable(&mut self, var: String) {
-        self.stack_offset += 8; // allocate 8 bytes for i64 (num type)
         self.symbol_table.insert(var.to_string(), self.stack_offset);
+        self.stack_offset -= 8; // allocate 8 bytes for i64 (num type)
     }
 
     fn load_variable(&mut self, var: String, dest: Reg) -> Result<(), String> {
         if let Some(addr) = self.symbol_table.get(&var) {
-            // self.instructions.push(Instruction::new_itype(
-            //     Opcode::Lw,
-            //     dest,
-            //     String::from("sp"),
-            //     addr.to_string(),
-            // ));
+            self.instructions.push(Instruction::new_itype(
+                Opcode::Lw,
+                dest,
+                Reg::StackPointer,
+                *addr,
+            ));
             Ok(())
         } else {
             Err(format!("Variable {} not declared", var))
@@ -50,40 +57,34 @@ impl CodeGenContext {
 
     fn store_variable(&mut self, var: String, src: Reg) -> Result<(), String> {
         if let Some(addr) = self.symbol_table.get(&var) {
-            // self.instructions.push(Instruction::new_stype(
-            //     Opcode::Sw,
-            //     String::from("sp"),
-            //     src,
-            //     addr.to_string(),
-            // ));
+            self.instructions.push(Instruction::new_stype(
+                Opcode::Sw,
+                Reg::StackPointer,
+                src,
+                *addr,
+            ));
             Ok(())
         } else {
             Err(format!("Variable {} not declared", var))
         }
     }
 
-    fn load_int_literal(&mut self, imm: i64, dest: Reg) {
-        // self.instructions.push(Instruction::new_itype(
-        //     Opcode::Li,
-        //     dest,
-        //     String::from("zero"),
-        //     imm.to_string(),
-        // ));
+    fn load_int_literal(&mut self, val: i64, dest: Reg) {
+        self.instructions.push(Instruction::new_itype(
+            Opcode::Addi,
+            dest,
+            Reg::Zero,
+            val as usize,
+        ));
     }
 
-    fn load_bool_literal(&mut self, imm: bool, dest: Reg) {
-        // Convert bool to 1 or 0 int type
-        let val = if imm {
-            "1".to_string()
-        } else {
-            "0".to_string()
-        };
-        // self.instructions.push(Instruction::new_itype(
-        //     Opcode::Li,
-        //     dest,
-        //     String::from("zero"),
-        //     val,
-        // ));
+    fn load_bool_literal(&mut self, val: bool, dest: Reg) {
+        self.instructions.push(Instruction::new_itype(
+            Opcode::Addi,
+            dest,
+            Reg::Zero,
+            if val { 1 } else { 0 },
+        ));
     }
 
     pub fn generate(&mut self, expr: &Expr) -> Result<(), String> {
@@ -103,7 +104,7 @@ impl CodeGenContext {
             }
             Expr::Let {
                 name,
-                var_type,
+                var_type, // TODO: Add type safety
                 expr,
             } => {
                 self.allocate_variable(name.clone());
@@ -113,22 +114,23 @@ impl CodeGenContext {
             Expr::Binary { left, op, right } => {
                 self.generate(left)?;
 
-                // self.instructions.push(Instruction::new_rtype(
-                //     Opcode::Addi,
-                //     String::from("t1"),
-                //     String::from("t0"),
-                //     String::from("zero"),
-                // ));
+                self.instructions.push(Instruction::new_itype(
+                    Opcode::Addi,
+                    Reg::Temp(1),
+                    Reg::Temp(0),
+                    0,
+                ));
 
                 self.generate(right)?;
+
                 self.instructions.push(Instruction::new_rtype(
                     match op {
                         BinaryOp::Add => Opcode::Add,
                         BinaryOp::Sub => Opcode::Sub,
                         BinaryOp::Mul => Opcode::Mul,
-                        BinaryOp::Div => todo!(),
-                        BinaryOp::And => todo!(),
-                        BinaryOp::Or => todo!(),
+                        BinaryOp::Div => Opcode::Div,
+                        BinaryOp::And => Opcode::And,
+                        BinaryOp::Or => Opcode::Or,
                         BinaryOp::Eq => todo!(),
                         BinaryOp::Neq => todo!(),
                         BinaryOp::Lt => todo!(),

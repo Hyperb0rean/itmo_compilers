@@ -3,6 +3,10 @@
 
 let a: num = 48;
 
-while a < 55 {
+while a < 53 {
+   if a >= 50 {
+     a = 56;
+   } else {
     a =  a + 1;
+   }
 }

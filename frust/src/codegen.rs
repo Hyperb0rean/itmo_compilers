@@ -190,22 +190,22 @@ impl CodeGenContext {
                 for expr in then_branch {
                     self.generate(expr)?;
                 }
-
-                let end_then_index = self.instructions.len();
                 if else_branch.is_some() {
                     self.instructions
                         .push(Instruction::new_jtype(Opcode::Jal, 0));
                 }
+                let end_then_index = self.instructions.len();
+                
                 self.instructions[condition_index]
-                    .set_offset(end_then_index as i32 - (condition_index as i32));
+                    .set_offset(end_then_index as i32 - 1 - (condition_index as i32));
 
                 if let Some(else_branch) = else_branch {
                     for expr in else_branch {
                         self.generate(expr)?;
                     }
                     let end_else_index = self.instructions.len();
-                    self.instructions[end_then_index]
-                        .set_offset(end_else_index as i32 - 1 - (end_then_index as i32));
+                    self.instructions[end_then_index - 1]
+                        .set_offset(end_else_index as i32 - (end_then_index as i32));
                 }
             }
             Expr::While { condition, body } => {

@@ -1,6 +1,7 @@
 use crate::ast::*;
 use crate::inst::*;
 use std::collections::HashMap;
+use std::io::IoSlice;
 use std::vec;
 
 pub struct CodeGenContext {
@@ -217,7 +218,7 @@ impl CodeGenContext {
                     Opcode::Beq,
                     Reg::Temp(0),
                     Reg::Zero,
-                    0, 
+                    0,
                 ));
 
                 for expr in body {
@@ -228,8 +229,8 @@ impl CodeGenContext {
                     Opcode::Jal,
                     (condition_start as i32 - 1 - jmp_index as i32) as u32,
                 ));
-                self.instructions[condition_end].set_offset(jmp_index as i32 - condition_end as i32);
-
+                self.instructions[condition_end]
+                    .set_offset(jmp_index as i32 - condition_end as i32);
             }
         }
         Ok(())

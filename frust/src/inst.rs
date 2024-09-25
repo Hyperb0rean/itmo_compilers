@@ -30,8 +30,8 @@ pub enum Opcode {
     Jalr,
 }
 
-impl Opcode {
-    pub fn to_string(&self) -> String {
+impl ToString for Opcode {
+    fn to_string(&self) -> String {
         match self {
             Opcode::Add => "add",
             Opcode::Sub => "sub",
@@ -77,8 +77,8 @@ pub enum Reg {
     Arguments(u8), // x10-11 return val, x12-17 args
 }
 
-impl Reg {
-    pub fn to_string(&self) -> String {
+impl ToString for Reg {
+    fn to_string(&self) -> String {
         match self {
             Reg::Zero => "x0",
             Reg::ReturnAddress => "x1",
@@ -213,8 +213,10 @@ impl Instruction {
     pub fn set_offset(&mut self, offset: i32) {
         self.imm = Some(offset as u32);
     }
+}
 
-    pub fn to_string(&self) -> String {
+impl ToString for Instruction {
+    fn to_string(&self) -> String {
         let mut parts = if let Some(label) = self.label.clone() {
             vec![label, String::from(": \n")]
         } else {
